@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maestro – Find Your Music Teacher in Seattle</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+    }
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    .teacher-list, .map {
+      margin-top: 20px;
+    }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    #map {
+      height: 500px;
+      width: 100%;
+      border-radius: 12px;
+    }
+    @media (max-width: 768px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Maestro – Find Your Music Teacher in Seattle</h1>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search by name or instrument..." style="flex: 1; padding: 8px;" />
+    <button onclick="clearSearch()" style="padding: 8px 12px;">Clear</button>
+  </div>
+
+  <div class="grid">
+    <div id="teacherList" class="teacher-list"></div>
+    <div class="map"><div id="map"></div></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const teachers = [
+      { id: 1, name: "Alice Nguyen", instrument: "Piano", lat: 47.6097, lng: -122.3331 },
+      { id: 2, name: "Carlos Diaz", instrument: "Violin", lat: 47.6062, lng: -122.3321 },
+      { id: 3, name: "Emily Zhao", instrument: "Guitar", lat: 47.6101, lng: -122.3421 },
+      { id: 4, name: "Tom Becker", instrument: "Voice", lat: 47.6136, lng: -122.3456 },
+    ];
+
+    const map = L.map('map').setView([47.6062, -122.3321], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const markers = [];
+
+    function renderTeachers(filtered) {
+      const container = document.getElementById("teacherList");
+      container.innerHTML = "";
+
+      // Clear old markers
+      markers.forEach(m => map.removeLayer(m));
+      markers.length = 0;
+
+      filtered.forEach(teacher => {
+        // Render card
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `<h2>${teacher.name}</h2><p>Teaches: ${teacher.instrument}</p>`;
+        container.appendChild(card);
+
+        // Add marker
+        const marker = L.marker([teacher.lat, teacher.lng])
+          .addTo(map)
+          .bindPopup(`<strong>${teacher.name}</strong><br>${teacher.instrument}`);
+        markers.push(marker);
+      });
+    }
+
+    function clearSearch() {
+      document.getElementById("searchInput").value = "";
+      renderTeachers(teachers);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", e => {
+      const query = e.target.value.toLowerCase();
+      const filtered = teachers.filter(t =>
+        t.name.toLowerCase().includes(query) || t.instrument.toLowerCase().includes(query)
+      );
+      renderTeachers(filtered);
+    });
+
+    renderTeachers(teachers);
+  </script>
+</body>
+</html>
